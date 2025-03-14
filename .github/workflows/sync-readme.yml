@@ -20,7 +20,7 @@ jobs:
       - name: Download target README
         run: |
           # 公开仓库：
-          curl -s -o external.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
+          curl -s -o external.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md?plain=1#L29
 
           # 私有仓库需添加 Token 授权：
           # curl -H "Authorization: token ${{ secrets.ACTION_TOKEN }}" -o external.md https://raw.githubusercontent.com/<目标用户>/<目标仓库>/main/README.md
@@ -30,20 +30,13 @@ jobs:
         id: extract-line
         run: |
           # 提取行内容（行号可调）
-          TARGET_LINE=$(sed -n '29p' external.md)
+          TARGET_LINE=$(sed -n '3p' external.md)
 
-# 若目标行不存在则报错退出或执行其他操作
-if [ -z "$TARGET_LINE" ]; then
-  echo "警告：目标行不存在，文件行数少于29行。"
-  # 你可以选择退出脚本，或者执行其他操作
-  # exit 1  # 如果你希望脚本在行数不足时退出，可以取消注释这行
-else
-  # 转义特殊字符（防止 sed 解析错误）
-  ESCAPED_LINE=$(echo "$TARGET_LINE" | sed 's/[\/&]/\\&/g; s/"/\\"/g')
-  
-  # 保存到环境变量
-  echo "NEW_CONTENT=$ESCAPED_LINE" >> $GITHUB_ENV
-fi
+          # 若目标行不存在则报错退出
+          if [ -z "$TARGET_LINE" ]; then
+            echo "错误：目标行不存在"
+            exit 1
+          fi
 
           # 转义特殊字符（防止 sed 解析错误）
           ESCAPED_LINE=$(echo "$TARGET_LINE" | sed 's/[\/&]/\\&/g; s/"/\\"/g')
