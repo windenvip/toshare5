@@ -40,7 +40,7 @@ jobs:
       - name: Fetch web content
         run: |
         # 使用 curl 获取网页内容（示例网址）
-        curl -sL "https://example.com/your-text-url" > new_content.txt
+        curl -sL env.SYNCED_CONTENT > new_content.txt
         # 清空并覆写 README.md
         echo "" > README.md
         cat new_content.txt >> README.md
