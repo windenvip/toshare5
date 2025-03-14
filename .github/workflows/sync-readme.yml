@@ -32,11 +32,18 @@ jobs:
           # 提取行内容（行号可调）
           TARGET_LINE=$(sed -n '29p' external.md)
 
-          # 若目标行不存在则报错退出
-          if [ -z "$TARGET_LINE" ]; then
-            echo "错误：目标行不存在"
-            exit 1
-          fi
+# 若目标行不存在则报错退出或执行其他操作
+if [ -z "$TARGET_LINE" ]; then
+  echo "警告：目标行不存在，文件行数少于29行。"
+  # 你可以选择退出脚本，或者执行其他操作
+  # exit 1  # 如果你希望脚本在行数不足时退出，可以取消注释这行
+else
+  # 转义特殊字符（防止 sed 解析错误）
+  ESCAPED_LINE=$(echo "$TARGET_LINE" | sed 's/[\/&]/\\&/g; s/"/\\"/g')
+  
+  # 保存到环境变量
+  echo "NEW_CONTENT=$ESCAPED_LINE" >> $GITHUB_ENV
+fi
 
           # 转义特殊字符（防止 sed 解析错误）
           ESCAPED_LINE=$(echo "$TARGET_LINE" | sed 's/[\/&]/\\&/g; s/"/\\"/g')
