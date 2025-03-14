@@ -1,3 +1,9 @@
+permissions:
+  contents: write  # 允许写入仓库代码
+  pull-requests: write  # 允许操作 PR
+``` ‌:ml-citation{ref="3,7" data="citationList"}
+
+
 name: Sync External README
 on:
   schedule:
