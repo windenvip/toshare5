@@ -20,14 +20,14 @@ jobs:
       - name: Fetch target README
         run: |
           # 公开仓库直接下载（私有仓库需替换为带 Token 的 URL）
-          curl -s -o external.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
+          curl -s -o README.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
 
       # 3. 强制提取目标行（行号可调）
       - name: Extract line
         id: extract
         run: |
           # 提取第 N 行（例如第 5 行）
-          TARGET_LINE=$(sed -n '29p' external.md)
+          TARGET_LINE=$(sed -n '29p' README.md)
 
           # 如果目标行不存在，终止流程
           if [ -z "$TARGET_LINE" ]; then
