@@ -30,7 +30,7 @@ jobs:
         id: extract-line
         run: |
           # 提取行内容（行号可调）
-          TARGET_LINE=$(sed -n '3p' external.md)
+          TARGET_LINE=$(sed -n '29p' external.md)
 
           # 若目标行不存在则报错退出
           if [ -z "$TARGET_LINE" ]; then
