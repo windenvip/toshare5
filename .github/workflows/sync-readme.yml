@@ -1,48 +1,56 @@
-name: Sync README Line
+name: Force Sync README First Line
 
 on:
   schedule:
-    # 每天凌晨 0 点自动运行（UTC 时间）
+    # 每天 UTC 0 点自动执行（北京时间 8 点，可修改 cron 表达式）
     - cron: "0 0 * * *"
   workflow_dispatch:  # 允许手动触发
 
 jobs:
-  sync-readme:
+  sync-first-line:
     runs-on: ubuntu-latest
     steps:
-      # 步骤 1：克隆你的仓库和对方的仓库
-      - name: Checkout your repo
+      # 1. 检出你的仓库（需写入权限）
+      - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ACTION_TOKEN }}  # 需配置权限 Token
+          token: ${{ secrets.REPO_TOKEN }}  # 需配置有写入权限的 Token
 
-      - name: Clone target repo
+      # 2. 下载对方的 README.md
+      - name: Fetch target README
         run: |
-          git clone https://github.com/目标用户/目标仓库.git temp-repo
+          # 公开仓库直接下载（私有仓库需替换为带 Token 的 URL）
+          curl -s -o external.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
 
-      # 步骤 2：提取对方 README 的指定行
-      - name: Extract line from target README
-        id: extract-line
+      # 3. 强制提取目标行（行号可调）
+      - name: Extract line
+        id: extract
         run: |
-          # 示例：提取第 10 行
-          TARGET_LINE=$(sed -n '10p' temp-repo/README.md)
-          # 或提取包含特定标记的行（例如 <!-- SYNC_LINE -->）
-          # TARGET_LINE=$(grep "<!-- SYNC_LINE -->" temp-repo/README.md)
+          # 提取第 N 行（例如第 5 行）
+          TARGET_LINE=$(sed -n '29p' external.md)
 
-          # 将内容保存到环境变量
-          echo "SYNCED_CONTENT=$TARGET_LINE" >> $GITHUB_ENV
+          # 如果目标行不存在，终止流程
+          if [ -z "$TARGET_LINE" ]; then
+            echo "错误：目标行不存在"
+            exit 1
+          fi
 
-      # 步骤 3：替换你的 README 中的占位符
-      - name: Update your README
+          # 转义特殊字符（/ & "）
+          ESCAPED_LINE=$(echo "$TARGET_LINE" | sed -e 's/[\/&]/\\&/g' -e 's/"/\\"/g')
+          echo "SYNCED_CONTENT=$ESCAPED_LINE" >> $GITHUB_ENV
+
+      # 4. 强制覆盖第一行
+      - name: Override first line
         run: |
-          # 使用占位符（例如 <!-- SYNC_LINE -->）替换内容
-          sed -i "s|<!-- SYNC_LINE -->|${{ env.SYNCED_CONTENT }}|" README.md
+          # 使用管道强制替换（兼容空行）
+          echo "${{ env.SYNCED_CONTENT }}" > temp.md
+          tail -n +2 README.md >> temp.md
+          mv temp.md README.md
 
-      # 步骤 4：提交更改
-      - name: Commit and push
+      # 5. 提交并强制推送
+      - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
-          author_name: "github-actions[bot]"
-          author_email: "41898282+github-actions[bot]@users.noreply.github.com"
-          message: "自动同步 README 行内容"
-          add: "README.md"
+          message: "强制同步第一行内容"
+          add: README.md
+          force: true  # 强制覆盖历史记录（可选）
