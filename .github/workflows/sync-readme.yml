@@ -20,7 +20,7 @@ jobs:
       - name: Download target README
         run: |
           # 公开仓库：
-          curl -s -o external.md https://raw.githubusercontent.com/<目标用户>/<目标仓库>/main/README.md
+          curl -s -o external.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
 
           # 私有仓库需添加 Token 授权：
           # curl -H "Authorization: token ${{ secrets.ACTION_TOKEN }}" -o external.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
