@@ -3,7 +3,7 @@ name: Sync First Line of README
 on:
   schedule:
     # 每天 UTC 时间 00:00 自动运行（北京时间 08:00）
-    - cron: "0 0 * * *"
+    - cron: "5 * * * *"
   workflow_dispatch:  # 可选：允许手动触发
 
 jobs:
