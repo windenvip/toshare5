@@ -18,7 +18,7 @@ jobs:
       - name: 提取指定行代码
         run: |
           # 示例：提取第 10 行（行号从 1 开始）
-          sed -n '10p' external-readme.md > extracted-line.txt
+          sed -n '29p' external-readme.md > extracted-line.txt
 
       - name: 更新自己的 README.md
         run: |
