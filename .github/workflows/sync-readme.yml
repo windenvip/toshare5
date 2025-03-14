@@ -1,38 +1,50 @@
-name: Sync README Line
+name: Force Override README First Line
 
 on:
   schedule:
-    # 每天凌晨 0 点自动运行（UTC 时间）
+    # 每天 UTC 时间 0 点运行（北京时间 8 点，cron 表达式可自定义）
     - cron: "0 0 * * *"
   workflow_dispatch:  # 允许手动触发
 
 jobs:
-  sync-readme:
+  override-readme:
     runs-on: ubuntu-latest
     steps:
-      # 步骤 1：克隆你的仓库和对方的仓库
-      - name: Checkout your repo
+      # 1. 检出你的仓库（需写入权限）
+      - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ACTION_TOKEN }}  # 需配置权限 Token
+          token: ${{ secrets.ACTION_TOKEN }}  # 使用指定名称的 Token
 
-      - name: Clone target repo
+      # 2. 下载目标 README.md（支持私有仓库）
+      - name: Download target README
         run: |
-          git clone https://github.com/toshare5/toshare5.github.io/blob/main/README.md
+          # 公开仓库：
+          curl -s -o external.md https://raw.githubusercontent.com/<目标用户>/<目标仓库>/main/README.md
 
-      # 步骤 2：提取对方 README 的指定行
-      - name: Extract line from target README
+          # 私有仓库需添加 Token 授权：
+          # curl -H "Authorization: token ${{ secrets.ACTION_TOKEN }}" -o external.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
+
+      # 3. 强制提取目标行（示例：第 3 行）
+      - name: Extract line
         id: extract-line
         run: |
-          # 示例：提取第 10 行
-          TARGET_LINE=$(sed -n '10p' temp-repo/README.md)
-          # 或提取包含特定标记的行（例如 <!-- SYNC_LINE -->）
-          # TARGET_LINE=$(grep "<!-- SYNC_LINE -->" temp-repo/README.md)
+          # 提取行内容（行号可调）
+          TARGET_LINE=$(sed -n '3p' external.md)
 
-          # 将内容保存到环境变量
-          echo "SYNCED_CONTENT=$TARGET_LINE" >> $GITHUB_ENV
+          # 若目标行不存在则报错退出
+          if [ -z "$TARGET_LINE" ]; then
+            echo "错误：目标行不存在"
+            exit 1
+          fi
 
-      # 步骤 3：强制覆盖 README 第一行
+          # 转义特殊字符（防止 sed 解析错误）
+          ESCAPED_LINE=$(echo "$TARGET_LINE" | sed 's/[\/&]/\\&/g; s/"/\\"/g')
+
+          # 保存到环境变量
+          echo "NEW_CONTENT=$ESCAPED_LINE" >> $GITHUB_ENV
+
+      # 4. 强制覆盖 README 第一行
       - name: Override first line
         run: |
           # 创建临时文件并覆盖第一行
@@ -40,7 +52,7 @@ jobs:
           tail -n +2 README.md >> temp.md
           mv temp.md README.md
 
-      # 步骤 4： 提交并强制推送
+      # 5. 提交并强制推送
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
