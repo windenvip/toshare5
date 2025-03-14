@@ -13,7 +13,7 @@ jobs:
 
       - name: 下载他人 README.md
         run: |
-          wget -O external-readme.md https://raw.githubusercontent.com/<目标用户名>/<目标仓库>/<分支>/README.md
+          wget -O external-readme.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
 
       - name: 提取指定行代码
         run: |
