@@ -2,54 +2,53 @@ name: Sync README Line
 
 on:
   schedule:
-    # 每天凌晨 0 点自动运行（UTC 时间）
-    - cron: "0 0 * * *"
-  workflow_dispatch:  # 允许手动触发
+    - cron: "0 0 * * *" # 每天凌晨 0 点自动运行（UTC 时间）
+  workflow_dispatch: # 允许手动触发
 
 jobs:
   sync-readme:
     runs-on: ubuntu-latest
-    
     permissions:
-    contents: write # 赋予写入权限
-    
+      contents: write # 赋予写入权限
+
     steps:
-      # 步骤 1：克隆你的仓库和对方的仓库
+      # 步骤 1：克隆当前仓库和目标仓库
       - name: Checkout your repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ACTION_TOKEN }}  # 需配置权限 Token
+          token: ${{ secrets.ACTION_TOKEN }} # 需配置权限 Token
 
       - name: Clone target repo
         run: |
           git clone https://github.com/toshare5/toshare5.github.io.git temp-repo
 
-      # 步骤 2：提取对方 README 的指定行
+      # 步骤 2：提取目标 README 的指定行
       - name: Extract line from target README
         id: extract-line
         run: |
-          # 示例：提取第 10 行
+          # 示例：提取第 29 行（注意，sed 行号从 1 开始计数）
           TARGET_LINE=$(sed -n '29p' temp-repo/README.md)
-          # 或提取包含特定标记的行（例如 <!-- SYNC_LINE -->）
-          # TARGET_LINE=$(grep "<!-- SYNC_LINE -->" temp-repo/README.md)
+          # 将行内容（假设为 URL）输出为环境变量（但此处直接用于下一步，未实际作为环境变量传递）
+          # 注意：此处 TARGET_LINE 应为 URL 字符串，但直接在此步骤中使用会导致问题
+          # 正确的做法是将 URL 存储在变量中，并在下一步使用
+          echo "$TARGET_LINE" # 仅用于调试，实际应在下一步直接使用
 
-          # 将内容保存到环境变量
-          echo "SYNCED_CONTENT=$TARGET_LINE" >> $GITHUB_ENV
-
-      # 步骤 3：获取网站内 env.SYNCED_CONTENT
-      - name: Fetch web content
+      # 注意：原配置中的 env 块位置错误，且 TARGET_LINE 变量作用域问题需修正
+      # 步骤 3：使用提取的 URL 抓取网页内容并更新 README.md
+      - name: Fetch web content and update README
         run: |
-        # 使用 curl 获取网页内容（示例网址）
-        curl -sL "$TARGET_LINE" > new_content.txt
-        # 清空并覆写 README.md
-        echo "" > README.md
-        cat new_content.txt >> README.md
+          # 使用 curl 获取网页内容（TARGET_LINE 应为上一步提取的 URL）
+          # 但由于 TARGET_LINE 在此作用域外定义，需通过其他方式传递（如直接在此步骤中执行）
+          curl -sL "$(echo $(sed -n '29p' temp-repo/README.md))" > new_content.txt
+          # 清空并覆写 README.md
+          echo "" > README.md
+          cat new_content.txt >> README.md
 
       # 步骤 4：提交更改
       - name: Commit changes
-       run: |
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
-        git add README.md
-        git commit -m "Auto-update README from web content"
-        git push
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add README.md
+          git commit -m "Auto-update README from web content"
+          git push
