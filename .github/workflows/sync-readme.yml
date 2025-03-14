@@ -16,10 +16,12 @@ jobs:
       - name: Checkout your repo
         uses: actions/checkout@v4
         with:
+          #系统的权限 Token名称:secrets.ACTION_TOKEN 
           token: ${{ secrets.ACTION_TOKEN }} # 需配置权限 Token
 
       - name: Clone target repo
         run: |
+          #引用的库 git clone https://github.com/xxx.git temp-repo
           git clone https://github.com/toshare5/toshare5.github.io.git temp-repo
 
       # 步骤 2：提取目标 README 的指定行
