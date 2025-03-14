@@ -25,7 +25,7 @@ jobs:
         id: extract-line
         run: |
           # 示例：提取第 10 行
-          TARGET_LINE=$(sed -n '10p' temp-repo/README.md)
+          TARGET_LINE=$(sed -n '29p' temp-repo/README.md)
           # 或提取包含特定标记的行（例如 <!-- SYNC_LINE -->）
           # TARGET_LINE=$(grep "<!-- SYNC_LINE -->" temp-repo/README.md)
 
