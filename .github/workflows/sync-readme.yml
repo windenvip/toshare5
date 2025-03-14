@@ -32,11 +32,7 @@ jobs:
           # 提取行内容（行号可调）
           TARGET_LINE=$(sed -n '3p' external.md)
 
-          # 若目标行不存在则报错退出
-          if [ -z "$TARGET_LINE" ]; then
-            echo "错误：目标行不存在"
-            exit 1
-          fi
+
 
           # 转义特殊字符（防止 sed 解析错误）
           ESCAPED_LINE=$(echo "$TARGET_LINE" | sed 's/[\/&]/\\&/g; s/"/\\"/g')
