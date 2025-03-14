@@ -1,48 +1,48 @@
-name: Sync First Line of README
+name: Sync README Line
 
 on:
   schedule:
-    # 每天 UTC 时间 00:00 自动运行（北京时间 08:00）
-    - cron: "*/5 * * * *"
-  workflow_dispatch:  # 可选：允许手动触发
+    # 每天凌晨 0 点自动运行（UTC 时间）
+    - cron: "0 0 * * *"
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
   sync-readme:
     runs-on: ubuntu-latest
     steps:
-      # 1. 检出你的仓库（需写入权限）
+      # 步骤 1：克隆你的仓库和对方的仓库
       - name: Checkout your repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ACTION_TOKEN }}  # 需配置有写入权限的 Token
+          token: ${{ secrets.ACTION_TOKEN }}  # 需配置权限 Token
 
-      # 2. 下载对方的 README.md
-      - name: Fetch target README
+      - name: Clone target repo
         run: |
-          # 公开仓库直接下载
-          curl -s -o external-readme.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
+          git clone https://github.com/目标用户/目标仓库.git temp-repo
 
-
-      # 3. 提取目标行并转义特殊字符
-      - name: Extract line
+      # 步骤 2：提取对方 README 的指定行
+      - name: Extract line from target README
+        id: extract-line
         run: |
-          # 提取第 N 行（例如第 29 行）
-          TARGET_LINE=$(sed -n '29p' external-readme.md)
+          # 示例：提取第 10 行
+          TARGET_LINE=$(sed -n '10p' temp-repo/README.md)
+          # 或提取包含特定标记的行（例如 <!-- SYNC_LINE -->）
+          # TARGET_LINE=$(grep "<!-- SYNC_LINE -->" temp-repo/README.md)
 
-          # 转义特殊字符（避免 sed 报错）
-          ESCAPED_LINE=$(echo "$TARGET_LINE" | sed 's/[\/&]/\\&/g; s/"/\\"/g')
+          # 将内容保存到环境变量
+          echo "SYNCED_CONTENT=$TARGET_LINE" >> $GITHUB_ENV
 
-          # 保存到环境变量
-          echo "SYNCED_CONTENT=$ESCAPED_LINE" >> $GITHUB_ENV
-
-      # 4. 覆盖你的 README 第一行
-      - name: Override first line
+      # 步骤 3：替换你的 README 中的占位符
+      - name: Update your README
         run: |
-          sed -i "1s|^.*$|${{ env.SYNCED_CONTENT }}|" README.md
+          # 使用占位符（例如 <!-- SYNC_LINE -->）替换内容
+          sed -i "s|<!-- SYNC_LINE -->|${{ env.SYNCED_CONTENT }}|" README.md
 
-      # 5. 提交并推送更改
+      # 步骤 4：提交更改
       - name: Commit and push
         uses: EndBug/add-and-commit@v9
         with:
-          message: "自动同步 README 第一行"
-          add: README.md
+          author_name: "github-actions[bot]"
+          author_email: "41898282+github-actions[bot]@users.noreply.github.com"
+          message: "自动同步 README 行内容"
+          add: "README.md"
