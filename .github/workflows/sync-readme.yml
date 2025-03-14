@@ -23,7 +23,7 @@ jobs:
           curl -s -o external-readme.md https://raw.githubusercontent.com/目标用户/目标仓库/main/README.md
 
           # 如果是私有仓库，需添加 Token 授权
-          # curl -H "Authorization: token ${{ secrets.ACTION_TOKEN }}" -o external-readme.md https://raw.githubusercontent.com/目标用户/目标仓库/main/README.md
+          # curl -H "Authorization: token ${{ secrets.ACTION_TOKEN }}" -o external-readme.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
 
       # 3. 提取目标行并转义特殊字符
       - name: Extract line
