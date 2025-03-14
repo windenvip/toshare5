@@ -1,49 +1,54 @@
-name: Force Sync README First Line
+name: Force Override README First Line
 
 on:
   schedule:
-    # 每天 UTC 0 点自动执行（北京时间 8 点，可修改 cron 表达式）
+    # 每天 UTC 时间 0 点运行（北京时间 8 点，cron 表达式可自定义）
     - cron: "0 0 * * *"
   workflow_dispatch:  # 允许手动触发
 
 jobs:
-  sync-first-line:
+  override-readme:
     runs-on: ubuntu-latest
     steps:
       # 1. 检出你的仓库（需写入权限）
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ACTION_TOKEN }}  # 需配置有写入权限的 Token
+          token: ${{ secrets.ACTION_TOKEN }}  # 使用指定名称的 Token
 
-      # 2. 下载对方的 README.md
-      - name: Fetch target README
+      # 2. 下载目标 README.md（支持私有仓库）
+      - name: Download target README
         run: |
-          # 公开仓库直接下载（私有仓库需替换为带 Token 的 URL）
-          curl -s -o README.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
+          # 公开仓库：
+          curl -s -o external.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
 
-      # 3. 强制提取目标行（行号可调）
+          # 私有仓库需添加 Token 授权：
+          # curl -H "Authorization: token ${{ secrets.ACTION_TOKEN }}" -o external.md https://raw.githubusercontent.com/<目标用户>/<目标仓库>/main/README.md
+
+      # 3. 强制提取目标行（示例：第 3 行）
       - name: Extract line
-        id: extract
+        id: extract-line
         run: |
-          # 提取第 N 行（例如第 5 行）
-          TARGET_LINE=$(sed -n '29p' README.md)
+          # 提取行内容（行号可调）
+          TARGET_LINE=$(sed -n '3p' external.md)
 
-          # 如果目标行不存在，终止流程
+          # 若目标行不存在则报错退出
           if [ -z "$TARGET_LINE" ]; then
             echo "错误：目标行不存在"
             exit 1
           fi
 
-          # 转义特殊字符（/ & "）
-          ESCAPED_LINE=$(echo "$TARGET_LINE" | sed -e 's/[\/&]/\\&/g' -e 's/"/\\"/g')
-          echo "SYNCED_CONTENT=$ESCAPED_LINE" >> $GITHUB_ENV
+          # 转义特殊字符（防止 sed 解析错误）
+          ESCAPED_LINE=$(echo "$TARGET_LINE" | sed 's/[\/&]/\\&/g; s/"/\\"/g')
 
-      # 4. 强制覆盖第一行
+          # 保存到环境变量
+          echo "NEW_CONTENT=$ESCAPED_LINE" >> $GITHUB_ENV
+
+      # 4. 强制覆盖 README 第一行
       - name: Override first line
         run: |
-          # 使用管道强制替换（兼容空行）
-          echo "${{ env.SYNCED_CONTENT }}" > temp.md
+          # 创建临时文件并覆盖第一行
+          echo "${{ env.NEW_CONTENT }}" > temp.md
           tail -n +2 README.md >> temp.md
           mv temp.md README.md
 
@@ -51,6 +56,6 @@ jobs:
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
-          message: "强制同步第一行内容"
+          message: "自动强制覆盖第一行"
           add: README.md
-          force: true  # 强制覆盖历史记录（可选）
+          force: true  # 强制覆盖 Git 历史
