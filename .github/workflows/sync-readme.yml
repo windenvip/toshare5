@@ -1,53 +1,32 @@
-name: Force Override README First Line
-
+name: Sync External README
 on:
   schedule:
-    # 每天 UTC 时间 0 点运行（北京时间 8 点，cron 表达式可自定义）
-    - cron: "0 0 * * *"
-  workflow_dispatch:  # 允许手动触发
+    - cron: '0 0 * * *'  # 每天 UTC 时间 0 点运行（可自定义）
+  workflow_dispatch:     # 允许手动触发
 
 jobs:
-  override-readme:
+  sync:
     runs-on: ubuntu-latest
     steps:
-      # 1. 检出你的仓库（需写入权限）
-      - name: Checkout repo
+      - name: 克隆仓库
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.ACTION_TOKEN }}  # 使用指定名称的 Token
 
-      # 2. 下载目标 README.md（支持私有仓库）
-      - name: Download target README
+      - name: 下载他人 README.md
         run: |
-          # 公开仓库：
-          curl -s -o external.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
+          wget -O external-readme.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
 
-          # 私有仓库需添加 Token 授权：
-          # curl -H "Authorization: token ${{ secrets.ACTION_TOKEN }}" -o external.md https://github.com/toshare5/toshare5.github.io/blob/main/README.md
-
-      # 3. 强制提取目标行（示例：第 3 行）
-      - name: Extract line
-        id: extract-line
+      - name: 提取指定行代码
         run: |
-          # 提取行内容（行号可调）
-          TARGET_LINE=$(sed -n '29p' external.md)
+          # 示例：提取第 10 行（行号从 1 开始）
+          sed -n '29p' external-readme.md > extracted-line.txt
 
-
-          # 保存到环境变量
-          echo "NEW_CONTENT=$TARGET_LINE" >> $GITHUB_ENV
-
-      # 4. 强制覆盖 README 第一行
-      - name: Override first line
+      - name: 更新自己的 README.md
         run: |
-          # 创建临时文件并覆盖第一行
-          echo "${{ env.NEW_CONTENT }}" > temp.md
-          tail -n +2 README.md >> temp.md
-          mv temp.md README.md
+          # 替换标记行（需预先在 README.md 中添加 <!-- AUTO-SYNC-LINE -->）
+          sed -i "/<!-- AUTO-SYNC-LINE -->/c $(cat extracted-line.txt)\n<!-- AUTO-SYNC-LINE -->" README.md
 
-      # 5. 提交并强制推送
-      - name: Commit changes
+      - name: 提交更改
         uses: EndBug/add-and-commit@v9
         with:
-          message: "自动强制覆盖第一行"
+          message: "自动同步 README 代码行"
           add: README.md
-          force: true  # 强制覆盖 Git 历史
