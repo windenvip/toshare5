@@ -30,7 +30,7 @@ jobs:
         id: extract-line
         run: |
           # 提取行内容（行号可调）
-          TARGET_LINE=$(sed -n '3p' external.md)
+          TARGET_LINE=$(sed -n '29p' external.md)
 
 
 
