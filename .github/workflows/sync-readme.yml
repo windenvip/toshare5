@@ -25,8 +25,8 @@ jobs:
       - name: Extract line
         id: extract-line
         run: |
-          # 提取第 5 行（行号可自定义）
-          TARGET_LINE=$(sed -n '5p' external-readme.md)
+          # 提取第 29 行（行号可自定义）
+          TARGET_LINE=$(sed -n '29p' external-readme.md)
           
           # 如果内容含特殊字符（如斜杠/引号），需转义
           ESCAPED_LINE=$(echo "$TARGET_LINE" | sed 's/[\/&]/\\&/g')
