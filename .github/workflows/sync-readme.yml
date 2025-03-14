@@ -38,7 +38,7 @@ jobs:
           # 使用占位符（例如 <!-- SYNC_LINE -->）替换内容
           #sed -i "s|<!-- SYNC_LINE -->|${{ env.SYNCED_CONTENT }}|" README.md
           # 强制覆盖第一行（保留其他内容）
-          sed -i "1i ${{ env.SYNCED_CONTENT }}" README.m
+          sed -i "1i ${{ env.SYNCED_CONTENT }}" README.md
 
       # 步骤 4：提交更改
       - name: Commit and push
