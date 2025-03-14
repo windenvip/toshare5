@@ -39,7 +39,6 @@ jobs:
         run: |
           # 使用 curl 获取网页内容（TARGET_LINE 应为上一步提取的 URL）
           # 但由于 TARGET_LINE 在此作用域外定义，需通过其他方式传递（如直接在此步骤中执行）
-          echo $(sed -n '29p' temp-repo/README.md)
           curl -sL "$(echo $(sed -n '29p' temp-repo/README.md))" > new_content.txt
           # 清空并覆写 README.md
           echo "" > README.md
