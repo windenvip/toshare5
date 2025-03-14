@@ -28,8 +28,8 @@ jobs:
       # 3. 提取目标行并转义特殊字符
       - name: Extract line
         run: |
-          # 提取第 N 行（例如第 5 行）
-          TARGET_LINE=$(sed -n '5p' external-readme.md)
+          # 提取第 N 行（例如第 29 行）
+          TARGET_LINE=$(sed -n '29p' external-readme.md)
 
           # 转义特殊字符（避免 sed 报错）
           ESCAPED_LINE=$(echo "$TARGET_LINE" | sed 's/[\/&]/\\&/g; s/"/\\"/g')
