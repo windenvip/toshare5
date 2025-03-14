@@ -1,7 +1,7 @@
 name: Sync External README
 on:
   schedule:
-    - cron: '0 0 * * *'  # 每天 UTC 时间 0 点运行（可自定义）
+    - cron: '2 * * * *'  # 每天 UTC 时间 0 点运行（可自定义）
   workflow_dispatch:     # 允许手动触发
 
 jobs:
