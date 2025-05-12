@@ -28,8 +28,8 @@ jobs:
       - name: Extract line from target README
         id: extract-line
         run: |
-          # 示例：提取第 29 行（注意，sed 行号从 1 开始计数）
-          TARGET_LINE=$(sed -n '29p' temp-repo/README.md)
+          # 示例：提取第 40 行（注意，sed 行号从 1 开始计数）
+          TARGET_LINE=$(sed -n '40p' temp-repo/README.md)
           # 将行内容（假设为 URL）设置为输出变量
           echo "::set-output name=url::$TARGET_LINE"
 
